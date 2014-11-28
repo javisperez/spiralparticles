@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Spiral Particles</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                background-color: #ff1c1c;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id='canvas'></canvas>
+        <script>
+            var d = document,
+                    c = d.getElementById('canvas'),
+                    cx = c.getContext('2d'),
+                    pAmount = 850,
+                    particles = [],
+                    m = Math,
+                    mouseX,
+                    mouseY,
+                    oldMouseX,
+                    oldMouseY,
+                    mvel,
+                    mouseDown = false,
+                    g = 0;
+
+            function makeParticles(amount) {
+                if (amount > pAmount) {
+                    amount = pAmount;
+                }
+
+                while (amount--) {
+                    var p = new particle(mouseX, mouseY);
+                    g += 0.01
+
+                    p.velX = m.cos(g + amount);
+                    p.velY = m.sin(g + amount);
+
+                    p.velX *= mvel * 0.2;
+                    p.velY *= mvel * 0.2;
+
+                    p.dragX *= mvel * 0.02;
+                    p.dragY *= mvel * 0.02;
+
+                    p.size = 0.8 * mvel;
+                    p.shrink = 1;
+
+                    particles.push(p);
+                }
+                while (particles.length > pAmount) {
+                    particles.shift();
+                }
+            }
+
+            function draw() {
+
+                cx.fillStyle = 'rgba(255,28,28,.1)';
+                cx.fillRect(0, 0, c.width, c.height);
+
+                makeParticles(6);
+
+                i = particles.length;
+
+                while (i--) {
+                    particles[i].render(cx);
+
+                    particles[i].update();
+                }
+            }
+
+            d.onmousemove = function (e) {
+
+                oldMouseX = mouseX;
+                oldMouseY = mouseY;
+
+                mouseX = e.pageX;
+                mouseY = e.pageY;
+
+                mvel = m.sqrt(m.pow(mouseX - oldMouseX, 2) + m.pow(mouseY - oldMouseY, 2));
+            }
+
+            d.onmousedown = function () {
+                mouseDown = true;
+            }
+
+            d.onmouseup = function () {
+                mouseDown = false;
+            }
+
+            setInterval(draw, 30);
+
+            /**
+             particle class
+             */
+            function particle(posX, posY) {
+                this.size = 1;
+                this.shrink = 0;
+
+                this.posX = posX;
+                this.posY = posY;
+
+                this.dragX = 1;
+                this.dragY = 1;
+
+                this.velX = 1;
+                this.velY = 1;
+
+                this.alpha = 1;
+                this.fade = 0;
+
+                this.gravity = 0;
+
+                this.color = '0,0,0';
+
+                this.floor = 0;
+            }
+
+            particle.prototype.update = function () {
+                this.velX *= this.dragX;
+                this.velY *= this.dragY;
+
+                this.posX += this.velX;
+                this.posY += this.velY;
+
+                this.velY += this.gravity;
+
+                this.alpha -= this.fade;
+
+                this.size -= this.shrink;
+
+                this.size = Math.max(0, this.size);
+            }
+
+
+
+            particle.prototype.render = function (context) {
+                context.fillStyle = 'rgb(255, 162, 28)';
+
+                context.beginPath();
+                context.arc(this.posX, this.posY, this.size, 0, Math.PI * 2, true);
+                context.closePath();
+
+                context.fill();
+            }
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+        </script>
+    </body>
+</html>
